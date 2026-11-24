@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACS PSTN Call Automation Tester</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>ACS Call Automation — Manual PSTN Tester</h1>
+
+  <div class="grid">
+    <div class="full">
+      <label>ACS Connection String (stored in localStorage only)</label>
+      <input id="acsConnStr" type="password" placeholder="endpoint=https://..." />
+    </div>
+    <div class="full">
+      <label>Azure AI / Cognitive Services Endpoint (required for TTS)</label>
+      <input id="cognitiveEndpoint" type="text" placeholder="https://azure.com" />
+    </div>
+    <div>
+      <label>ACS Source PSTN Number (E.164)</label>
+      <input id="sourcePhone" type="text" placeholder="+442079460000" />
+    </div>
+    <div>
+      <label>Target PSTN Number (E.164)</label>
+      <input id="targetPhone" type="text" placeholder="+447700900000" />
+    </div>
+    <div>
+      <label>Play Mode</label>
+      <select id="playMode">
+        <option value="tts">Text-to-Speech (TTS)</option>
+        <option value="file">WAV Audio File URL</option>
+      </select>
+    </div>
+    <div>
+      <label>TTS Voice Name (if TTS)</label>
+      <input id="ttsVoice" type="text" value="en-GB-SoniaNeural" />
+    </div>
+    <div class="full">
+      <label>TTS Message Text OR Public WAV URL</label>
+      <textarea id="playPayload" rows="2">Hello, this is an automated test call from Azure Communication Services.</textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="btnCall">1. Place PSTN Call</button>
+    <button id="btnPlay" disabled>2. Play TTS / Audio</button>
+    <button id="btnHangup" disabled>3. End Call</button>
+    <button id="btnClear">Clear Storage</button>
+  </div>
+
+  <div id="log"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
