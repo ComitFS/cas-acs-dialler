@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speakerbus → IPC OneView Migration Tester</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="./jspdf.umd.min.js"></script>
+  <script src="./jspdf.plugin.autotable.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Speakerbus → IPC OneView Migration Tester</h1>
+      <span class="subtitle">ACS Call Automation Test Harness • LocalStorage Resume</span>
+    </div>
+    <div class="top-actions">
+      <label class="btn btn-secondary file-btn">Import Speakerbus JSON <input id="jsonFile" type="file" accept=".json" hidden /></label>
+      <button id="btnPdf" class="btn btn-primary" disabled>Download PDF Report</button>
+      <button id="btnReset" class="btn btn-danger">Reset All</button>
+    </div>
+  </header>
+
+  <details class="card" open>
+    <summary><strong>ACS &amp; Dialler Settings</strong> (Saved locally in browser)</summary>
+    <div class="grid-4 mt">
+      <div class="span-2"><label>ACS Connection String</label><input id="acsConnStr" type="password" placeholder="endpoint=https://..." /></div>
+      <div class="span-2"><label>Azure AI Cognitive Endpoint</label><input id="cognitiveEndpoint" type="text" placeholder="https://" /></div>
+      <div><label>Source Caller ID (E.164)</label><input id="sourcePhone" type="text" placeholder="+17045550100" /></div>
+      <div><label>Default Country Prefix</label><input id="countryPrefix" type="text" value="+1" /></div>
+      <div><label>Ring Timeout (sec)</label><input id="ringTimeout" type="number" value="25" min="5" max="60" /></div>
+      <div><label>TTS Hold / Cooldown (sec)</label><div class="split"><input id="playHold" type="number" value="8" title="Play Hold" /><input id="cooldownSec" type="number" value="6" title="Cooldown" /></div></div>
+      <div><label>TTS Voice</label><input id="ttsVoice" type="text" value="en-US-JennyNeural" /></div>
+      <div class="span-3"><label>Static TTS Test Message</label><input id="ttsMessage" type="text" value="IPC OneView migration test call. Please confirm audio on both handsets and speaker." /></div>
+    </div>
+  </details>
+
+  <section class="card">
+    <div class="kpis">
+      <div class="kpi"><span id="kpiTotal">0</span><label>Total Lines</label></div>
+      <div class="kpi ok"><span id="kpiPass">0</span><label>Answered / Pass</label></div>
+      <div class="kpi warn"><span id="kpiTimeout">0</span><label>Timeout / No Ans</label></div>
+      <div class="kpi err"><span id="kpiFail">0</span><label>Failed / Unmatched</label></div>
+      <div class="kpi"><span id="kpiPending">0</span><label>Remaining</label></div>
+    </div>
+    <div class="progress-track">
+      <div id="barPass" class="bar ok"></div>
+      <div id="barTimeout" class="bar warn"></div>
+      <div id="barFail" class="bar err"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="tabs">
+      <button id="tabUc1" class="tab active">Use Case 1: Group &amp; User Line Sweep</button>
+      <button id="tabUc2" class="tab">Use Case 2: Multi-Handset / Speaker Stress Test</button>
+    </div>
+
+    <div class="toolbar">
+      <div><label>Trading Group</label><select id="selGroup"></select></div>
+      <div><label>User (Logon ID)</label><select id="selUser"></select></div>
+      <div id="uc1Controls" class="btn-group">
+        <button id="btnRunUser" class="btn btn-success">Test Selected User</button>
+        <button id="btnRunGroup" class="btn btn-primary">Test Entire Group</button>
+        <button id="btnStop" class="btn btn-danger" disabled>Stop</button>
+      </div>
+      <div id="uc2Controls" class="btn-group hidden">
+        <div><label>Repeat Calls</label><input id="uc2Count" type="number" value="3" min="1" max="10" style="width:75px" /></div>
+        <button id="btnRunUc2" class="btn btn-success">Run Handset/Speaker Test</button>
+        <button id="btnStop2" class="btn btn-danger" disabled>Stop</button>
+      </div>
+    </div>
+
+    <div id="userMeta" class="meta-banner">Import a Speakerbus JSON export to begin.</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>User</th><th>Key Label</th><th>Number (DDI)</th><th>ACS Result</th><th>Turret Outcome / Notes (Handsets &amp; Speaker)</th><th>Action</th></tr>
+        </thead>
+        <tbody id="linesBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="log" class="log-box"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
