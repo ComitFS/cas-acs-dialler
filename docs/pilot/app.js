@@ -2,7 +2,11 @@ import { parseSpeakerbusJson } from "./parser.js";
 import { executeTestCall } from "./acs.js";
 import { downloadPdfReport } from "./report.js";
 
-const CFG_IDS = ["acsConnStr", "cognitiveEndpoint", "sourcePhone", "countryPrefix", "ringTimeout", "playHold", "cooldownSec", "ttsVoice", "ttsMessage"];
+const CFG_IDS = [
+  "acsConnStr", "cognitiveEndpoint", "callerMode", "teamsRaOid",
+  "sourcePhone", "countryPrefix", "ringTimeout", "playHold",
+  "cooldownSec", "ttsVoice", "ttsMessage"
+];
 const STORAGE_DATA_KEY = "ipc_migration_groups_v1";
 
 let groups = [];
@@ -22,11 +26,13 @@ function getCfg() {
   return {
     acsConnStr: $("acsConnStr").value.trim(),
     cognitiveEndpoint: $("cognitiveEndpoint").value.trim(),
+    callerMode: $("callerMode").value,
+    teamsRaOid: $("teamsRaOid").value.trim(),
     sourcePhone: $("sourcePhone").value.trim(),
     countryPrefix: $("countryPrefix").value.trim() || "+1",
     ringTimeout: Number($("ringTimeout").value) || 25,
     playHold: Number($("playHold").value) || 8,
-    cooldownSec: Number($("cooldownSec").value) || 4,
+    cooldownSec: Number($("cooldownSec").value) || 6,
     ttsVoice: $("ttsVoice").value.trim(),
     ttsMessage: $("ttsMessage").value.trim()
   };
@@ -55,7 +61,6 @@ window.addEventListener("DOMContentLoaded", () => {
 $("jsonFile").onchange = async (e) => {
   const file = e.target.files.item(0);
   if (!file) return;
-
   try {
     const raw = JSON.parse(await file.text());
     groups = parseSpeakerbusJson(Array.isArray(raw) ? raw : [raw]);
@@ -117,7 +122,7 @@ function renderTable() {
   tbody.innerHTML = "";
 
   if (activeTab === "uc1") {
-    u.lines.forEach((line, idx) => {
+    u.lines.forEach((line) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${u.name}</td>
@@ -184,7 +189,7 @@ async function runLines(lineList) {
   setRunning(true);
   for (let i = 0; i < lineList.length; i++) {
     if (abortCtrl.signal.aborted) break;
-	const line = lineList.at(i);
+    const line = lineList.at(i);
     line.status = "calling";
     renderTable();
 
@@ -214,7 +219,7 @@ $("btnRunGroup").onclick = () => {
 };
 
 $("btnRunUc2").onclick = async () => {
-  const u = groups[$("selGroup").value]?.users[$("selUser").value];
+  const u = groups.at($("selGroup").value)?.users.at($("selUser").value);
   if (!u?.personalDdi) return log("Cannot run Use Case 2: No matched Personal DDI for this user.");
   const count = Number($("uc2Count").value) || 3;
   const cfg = getCfg();

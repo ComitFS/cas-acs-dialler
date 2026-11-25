@@ -1,6 +1,7 @@
 import { hmacSha256Base64, sha256Base64, base64ToBytes, parseAcsConnectionString, toE164 } from "./crypto.js";
 
-const API_VERSION = "2024-09-15";
+const API_VERSION = "2026-03-12";
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 export async function acsRequest(cfg, method, pathAndQuery, bodyObj) {
   const { endpoint, accessKey } = parseAcsConnectionString(cfg.acsConnStr);
@@ -34,7 +35,6 @@ export async function acsRequest(cfg, method, pathAndQuery, bodyObj) {
       }
       return text ? JSON.parse(text) : {};
     } catch (err) {
-      // Retry once on transient network/CORS fetch drop or 429/503 throttle
       const isTransient = !err.status || err.status === 429 || err.status >= 500;
       if (attempt === 1 && isTransient) {
         await sleep(1500);
@@ -43,25 +43,23 @@ export async function acsRequest(cfg, method, pathAndQuery, bodyObj) {
       throw err;
     }
   }
-
-
-  const text = await res.text();
-  if (!res.ok) {
-    const err = new Error(`HTTP ${res.status}: ${text}`);
-    err.status = res.status;
-    throw err;
-  }
-  return text ? JSON.parse(text) : {};
 }
-
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 export async function executeTestCall(cfg, rawTargetNumber, onLog, abortSignal) {
   const targetE164 = toE164(rawTargetNumber, cfg.countryPrefix);
-  const sourceE164 = toE164(cfg.sourcePhone, cfg.countryPrefix);
+  const isTpe = cfg.callerMode === "tpe";
+
+  const sourcePayload = isTpe
+    ? { teamsAppSource: { appId: cfg.teamsRaOid } }
+    : { sourceCallerIdNumber: { value: toE164(cfg.sourcePhone, cfg.countryPrefix) } };
+
   const payload = {
-    targets: [{ rawId: `4:${targetE164}`, phoneNumber: { value: targetE164 } }],
-    sourceCallerIdNumber: { value: sourceE164 },
+    targets: [{
+      kind: "phoneNumber",
+      rawId: `4:${targetE164}`,
+      phoneNumber: { value: targetE164 }
+    }],
+    ...sourcePayload,
     callbackUri: "https://example.com",
     ...(cfg.cognitiveEndpoint && {
       callIntelligenceOptions: { cognitiveServicesEndpoint: cfg.cognitiveEndpoint }
@@ -70,7 +68,7 @@ export async function executeTestCall(cfg, rawTargetNumber, onLog, abortSignal) 
 
   let callId = "";
   try {
-    onLog(`Dialling ${targetE164}...`);
+    onLog(`Dialling ${targetE164} via ${isTpe ? "Teams TPE" : "ACS PSTN"}...`);
     const created = await acsRequest(cfg, "POST", `/calling/callConnections?api-version=${API_VERSION}`, payload);
     callId = created.callConnectionId;
     onLog(`Queued (ID: ${callId}). Waiting up to ${cfg.ringTimeout}s for answer...`);

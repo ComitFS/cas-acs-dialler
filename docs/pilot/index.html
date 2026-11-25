@@ -12,7 +12,7 @@
   <header class="topbar">
     <div>
       <h1>Speakerbus → IPC OneView Migration Tester</h1>
-      <span class="subtitle">ACS Call Automation Test Harness • LocalStorage Resume</span>
+      <span class="subtitle">ACS &amp; Teams Phone Extensibility (TPE) Harness • LocalStorage Resume</span>
     </div>
     <div class="top-actions">
       <label class="btn btn-secondary file-btn">Import Speakerbus JSON <input id="jsonFile" type="file" accept=".json" hidden /></label>
@@ -22,16 +22,30 @@
   </header>
 
   <details class="card" open>
-    <summary><strong>ACS &amp; Dialler Settings</strong> (Saved locally in browser)</summary>
+    <summary><strong>ACS, Teams TPE &amp; Dialler Settings</strong> (Saved locally in browser)</summary>
     <div class="grid-4 mt">
       <div class="span-2"><label>ACS Connection String</label><input id="acsConnStr" type="password" placeholder="endpoint=https://..." /></div>
       <div class="span-2"><label>Azure AI Cognitive Endpoint</label><input id="cognitiveEndpoint" type="text" placeholder="https://" /></div>
-      <div><label>Source Caller ID (E.164)</label><input id="sourcePhone" type="text" placeholder="+17045550100" /></div>
+      <div>
+        <label>Outbound Caller Mode</label>
+        <select id="callerMode">
+          <option value="tpe">Teams Resource Account (TPE)</option>
+          <option value="acs">ACS PSTN Number (Legacy)</option>
+        </select>
+      </div>
+      <div><label>Teams Resource Account OID (if TPE)</label><input id="teamsRaOid" type="text" placeholder="00000000-0000-0000-0000-000000000000" /></div>
+      <div><label>ACS Source PSTN Number (if ACS)</label><input id="sourcePhone" type="text" placeholder="+442079460000" /></div>
       <div><label>Default Country Prefix</label><input id="countryPrefix" type="text" value="+1" /></div>
       <div><label>Ring Timeout (sec)</label><input id="ringTimeout" type="number" value="25" min="5" max="60" /></div>
-      <div><label>TTS Hold / Cooldown (sec)</label><div class="split"><input id="playHold" type="number" value="8" title="Play Hold" /><input id="cooldownSec" type="number" value="6" title="Cooldown" /></div></div>
-      <div><label>TTS Voice</label><input id="ttsVoice" type="text" value="en-US-JennyNeural" /></div>
-      <div class="span-3"><label>Static TTS Test Message</label><input id="ttsMessage" type="text" value="IPC OneView migration test call. Please confirm audio on both handsets and speaker." /></div>
+      <div>
+        <label>TTS Hold / Cooldown (sec)</label>
+        <div class="split">
+          <input id="playHold" type="number" value="8" title="Play Hold Seconds" />
+          <input id="cooldownSec" type="number" value="6" title="Cooldown Seconds" />
+        </div>
+      </div>
+      <div><label>TTS Voice</label><input id="ttsVoice" type="text" value="en-GB-SoniaNeural" /></div>
+      <div><label>Static TTS Test Message</label><input id="ttsMessage" type="text" value="IPC OneView migration test call. Please confirm audio on both handsets and speaker." /></div>
     </div>
   </details>
 
